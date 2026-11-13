@@ -109,6 +109,11 @@ class FunnelDemoTests(unittest.TestCase):
             total_including_forecast = con.execute("SELECT SUM(sessions) FROM traffic_facts").fetchone()[0]
         self.assertLess(result["current"]["sessions"], total_including_forecast)
 
+    def test_seeded_conversion_delta_matches_demo_scenario(self):
+        result = service.overview(30)
+        self.assertLess(result["conversion_delta_pp"], -1.5)
+        self.assertGreater(result["conversion_delta_pp"], -2.5)
+
     def test_overview_funnel_is_monotonic_and_percentages_are_bounded(self):
         result = service.overview(30)
         funnel = result["funnel"]
