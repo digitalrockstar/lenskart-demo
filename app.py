@@ -281,12 +281,21 @@ def make_hypotheses(now: datetime | None = None) -> list[dict[str, Any]]:
     pay_prev_rate = pct(pay_prev["orders"], pay_prev["payment_attempts"])
     pay_delta = pay_now_rate - pay_prev_rate
     pay_share = pct(pay_now["payment_attempts"], current["payment_attempts"])
+    payment_sample_ok = pay_now["payment_attempts"] >= 300 and pay_prev["payment_attempts"] >= 300
+    payment_signal = payment_sample_ok and pay_delta <= -8.0
+    payment_score = min(99, round(30 + max(0, -pay_delta) * 1.35)) if payment_sample_ok else 10
+    payment_confidence = "High" if payment_signal and pay_delta <= -20 else "Medium" if payment_signal else "Low"
 
     app_now = aggregate(current_start, now, {"device": "Android App"})
     app_prev = aggregate(previous_start, current_start, {"device": "Android App"})
     load_change = app_now["avg_page_load_ms"] - app_prev["avg_page_load_ms"]
     cart_now = pct(app_now["add_to_cart"], app_now["product_views"])
     cart_prev = pct(app_prev["add_to_cart"], app_prev["product_views"])
+    app_sample_ok = app_now["sessions"] >= 500 and app_prev["sessions"] >= 500
+    cart_drop = cart_prev - cart_now
+    app_signal = app_sample_ok and load_change >= 500 and cart_drop >= 1.0
+    app_score = min(95, round(30 + max(0, load_change) / 30 + max(0, cart_drop) * 5)) if app_sample_ok else 10
+    app_confidence = "High" if app_signal and load_change >= 1000 else "Medium" if app_signal else "Low"
 
     social_now = aggregate(current_start, now, {"channel": "Paid Social"})
     social_prev = aggregate(previous_start, current_start, {"channel": "Paid Social"})
@@ -299,14 +308,21 @@ def make_hypotheses(now: datetime | None = None) -> list[dict[str, Any]]:
         organic_now["product_views"] + search_now["product_views"],
         organic_now["sessions"] + search_now["sessions"],
     )
+    social_mix_change = social_share_now - social_share_prev
+    intent_gap = non_social_view_now - social_view_now
+    social_sample_ok = social_now["sessions"] >= 500 and social_prev["sessions"] >= 500
+    social_signal = social_sample_ok and social_mix_change >= 5.0 and intent_gap >= 8.0
+    social_score = min(95, round(30 + max(0, social_mix_change) * 2 + max(0, intent_gap) * 1.5)) if social_sample_ok else 10
+    social_confidence = "High" if social_signal and social_mix_change >= 10 and intent_gap >= 15 else "Medium" if social_signal else "Low"
 
     items = [
         {
             "key": "payment",
             "title": "UPI payment success has fallen on Android",
             "category": "PAYMENT",
-            "confidence": "High",
-            "score": min(99, round(68 + abs(pay_delta) * 0.55)),
+            "confidence": payment_confidence,
+            "signal_detected": payment_signal,
+            "score": payment_score,
             "evidence": (
                 f"Android + UPI payment completion is {pay_now_rate:.1f}% vs "
                 f"{pay_prev_rate:.1f}% in the previous 30 days ({pay_delta:+.1f} pp). "
@@ -317,13 +333,15 @@ def make_hypotheses(now: datetime | None = None) -> list[dict[str, Any]]:
                 "responses on Android, concentrated by app version or gateway route."
             ),
             "metric": f"{pay_now_rate:.1f}% success",
+            "sample_size": int(pay_now["payment_attempts"]),
         },
         {
             "key": "latency",
             "title": "Android app latency is weakening cart intent",
             "category": "APP EXPERIENCE",
-            "confidence": "Medium",
-            "score": min(94, round(62 + max(0, load_change) / 90 + max(0, cart_prev - cart_now) * 180)),
+            "confidence": app_confidence,
+            "signal_detected": app_signal,
+            "score": app_score,
             "evidence": (
                 f"Android average page load is {app_now['avg_page_load_ms'] / 1000:.2f}s "
                 f"vs {app_prev['avg_page_load_ms'] / 1000:.2f}s previously "
@@ -335,30 +353,32 @@ def make_hypotheses(now: datetime | None = None) -> list[dict[str, Any]]:
                 "and slow sessions have a materially lower add-to-cart rate."
             ),
             "metric": f"{app_now['avg_page_load_ms'] / 1000:.2f}s avg load",
+            "sample_size": int(app_now["sessions"]),
         },
         {
             "key": "mix",
             "title": "Paid Social is contributing more low-intent sessions",
             "category": "CHANNEL MIX",
-            "confidence": "Medium",
-            "score": min(90, round(60 + max(0, social_share_now - social_share_prev) * 0.65
-                                  + max(0, social_view_prev - social_view_now) * 0.25)),
+            "confidence": social_confidence,
+            "signal_detected": social_signal,
+            "score": social_score,
             "evidence": (
                 f"Paid Social share moved from {social_share_prev:.1f}% to "
-                f"{social_share_now:.1f}% of sessions (up from {social_share_prev:.1f}%). "
-                f"Its product-view rate is {social_view_now:.1f}% vs "
-                f"{non_social_view_now:.1f}% for non-social traffic."
+                f"{social_share_now:.1f}% of sessions. Its product-view rate is "
+                f"{social_view_now:.1f}% vs {non_social_view_now:.1f}% for non-social traffic."
             ),
             "confirm_if": (
                 "Campaign/ad-set and landing-page cuts show the incremental paid-social "
                 "sessions have lower product-view and add-to-cart rates than other channels."
             ),
             "metric": f"{social_share_now:.1f}% traffic share",
+            "sample_size": int(social_now["sessions"]),
         },
     ]
     items.sort(key=lambda item: item["score"], reverse=True)
     for index, item in enumerate(items, start=1):
         item["rank"] = index
+        item["signal_label"] = "Signal detected" if item["signal_detected"] else "Watch only"
     return items[:3]
 
 
