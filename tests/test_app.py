@@ -33,7 +33,7 @@ def mocked_aggregate(scenario="neutral", low_sample=False):
         if filters.get("device") == "Android App" and "payment_method" in filters:
             attempts = 100 if low_sample else 12_000
             previous_orders = round(attempts * 0.85)
-            current_rate = 0.45 if scenario == "anomaly" else 0.77 if scenario == "threshold" else 0.85
+            current_rate = 0.45 if scenario == "anomaly" else 0.77 if scenario == "threshold" else 0.78 if scenario == "mild" else 0.85
             current_orders = round(attempts * current_rate)
             if not current:
                 return metric_row(sessions=20_000, payment_attempts=attempts, orders=previous_orders)
@@ -48,12 +48,13 @@ def mocked_aggregate(scenario="neutral", low_sample=False):
                 sessions=sessions,
                 product_views=48_000,
                 add_to_cart=13_680 if scenario == "anomaly" else 14_400,
-                avg_page_load_ms=3_500.0 if scenario == "anomaly" else 2_200.0,
+                avg_page_load_ms=3_500.0 if scenario == "anomaly" else 3_300.0 if scenario == "mild" else 2_200.0,
             )
 
         if filters.get("channel") == "Paid Social":
-            sessions = 450 if low_sample else (35_000 if current and scenario == "anomaly" else 25_000)
-            return metric_row(sessions=sessions, product_views=round(sessions * 0.56))
+            sessions = 450 if low_sample else (35_000 if current and scenario in {"anomaly", "mild"} else 25_000)
+            view_rate = 0.56 if scenario != "mild" else 0.76
+            return metric_row(sessions=sessions, product_views=round(sessions * view_rate))
 
         if filters.get("channel") == "Organic Search":
             return metric_row(sessions=39_000, product_views=30_420)
@@ -190,6 +191,12 @@ class FunnelDemoTests(unittest.TestCase):
             hypotheses = service.make_hypotheses(now)
         self.assertTrue(all(not item["signal_detected"] for item in hypotheses))
         self.assertTrue(all(item["confidence"] == "Low" for item in hypotheses))
+
+    def test_single_factor_changes_without_supporting_evidence_are_not_flagged(self):
+        fake, now = mocked_aggregate("mild")
+        with patch.object(service, "aggregate", side_effect=fake):
+            hypotheses = service.make_hypotheses(now)
+        self.assertTrue(all(not item["signal_detected"] for item in hypotheses))
 
     def test_payment_threshold_is_inclusive_at_eight_percentage_points(self):
         fake, now = mocked_aggregate("threshold")
