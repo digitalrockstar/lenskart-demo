@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fa">
+  <title>Growth Intelligence · Lenskart</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">L</div>
+        <div><div class="brand-name">LENSKART</div><div class="brand-sub">GROWTH INTELLIGENCE</div></div>
+      </div>
+
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-target="overview"><span class="nav-icon">◫</span> Overview</button>
+        <button class="nav-item" data-target="funnel"><span class="nav-icon">⌁</span> Traffic funnel</button>
+        <button class="nav-item" data-target="diagnostics"><span class="nav-icon">◈</span> Hypotheses <span class="nav-count">3</span></button>
+        <button class="nav-item" data-target="agent"><span class="nav-icon">⟳</span> Agent activity</button>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+      <div class="agent-mini">
+        <div class="agent-mini-head"><span class="status-pulse"></span> DIAGNOSTIC AGENT</div>
+        <div class="agent-mini-title">Autonomous monitoring is on</div>
+        <div class="agent-mini-copy">Watching funnel signals and refreshing the diagnosis.</div>
+        <div class="agent-mini-foot"><span>Local simulation</span><span class="tiny-dot"></span></div>
+      </div>
+      <div class="sidebar-foot">DEMO ENVIRONMENT <span>·</span> SYNTHETIC DATA</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb">Analytics <span>/</span> Acquisition & conversion</div>
+        <div class="top-actions">
+          <div class="data-window"><span class="live-dot"></span><span>LIVE DATA</span></div>
+          <label class="range-control">
+            <span class="sr-only">Reporting window</span>
+            <select id="rangeSelect" aria-label="Reporting window">
+              <option value="7">Last 7 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="60">Last 60 days</option>
+            </select>
+          </label>
+          <button id="seedButton" class="button button-quiet">↻ <span>Reseed data</span></button>
+          <button id="runButton" class="button button-primary"><span class="button-play">▶</span> Run diagnosis</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section id="overview" class="section-anchor">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">PERFORMANCE SNAPSHOT</div>
+              <h1>Growth overview</h1>
+              <p class="subheading">Understand what is moving acquisition, checkout and revenue.</p>
+            </div>
+            <div class="updated-block"><span class="updated-label">LAST UPDATED</span><strong id="updatedAt">—</strong><span class="refresh-note">Auto-refreshes every 15 sec</span></div>
+          </div>
+
+          <div class="kpi-grid">
+            <article class="kpi-card">
+              <div class="kpi-top"><span>Sessions</span><span class="kpi-symbol">↗</span></div>
+              <div class="kpi-value" id="sessionsValue">—</div>
+              <div class="kpi-foot"><span id="sessionsDelta" class="delta neutral">—</span><span>vs previous period</span></div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-top"><span>Orders</span><span class="kpi-symbol">▤</span></div>
+              <div class="kpi-value" id="ordersValue">—</div>
+              <div class="kpi-foot"><span id="ordersDelta" class="delta neutral">—</span><span>vs previous period</span></div>
+            </article>
+            <article class="kpi-card conversion-card">
+              <div class="kpi-top"><span>Purchase conversion</span><span class="kpi-symbol">◎</span></div>
+              <div class="kpi-value" id="conversionValue">—</div>
+              <div class="kpi-foot"><span id="conversionDelta" class="delta negative">—</span><span>percentage points</span></div>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-top"><span>Revenue</span><span class="kpi-symbol">₹</span></div>
+              <div class="kpi-value" id="revenueValue">—</div>
+              <div class="kpi-foot"><span id="revenueDelta" class="delta neutral">—</span><span>vs previous period</span></div>
+            </article>
+          </div>
+
+          <div class="main-grid">
+            <article class="panel trend-panel">
+              <div class="panel-heading">
+                <div><h2>Traffic & orders trend</h2><p>Daily actuals · rolling reporting window</p></div>
+                <div class="legend"><span><i class="legend-swatch sessions-swatch"></i> Sessions</span><span><i class="legend-swatch orders-swatch"></i> Orders</span></div>
+              </div>
+              <div class="chart-wrap"><svg id="trendChart" viewBox="0 0 800 230" role="img" aria-label="Daily sessions and orders trend"></svg></div>
+              <div class="chart-axis"><span id="chartStart">—</span><span>DAILY VOLUME · ACTUAL</span><span id="chartEnd">—</span></div>
+            </article>
+
+            <article class="panel signal-panel">
+              <div class="panel-heading"><div><h2>Conversion signal</h2><p>Current vs previous period</p></div><span class="signal-status">NEEDS ATTENTION</span></div>
+              <div class="signal-number"><strong id="signalDelta">—</strong><span>pp</span></div>
+              <div class="signal-copy">Purchase conversion has shifted outside the expected range. The diagnostic agent is checking the funnel and its leading indicators.</div>
+              <div class="signal-divider"></div>
+              <div class="signal-meta"><span>Current conversion</span><strong id="signalCurrent">—</strong></div>
+              <div class="signal-meta"><span>Previous conversion</span><strong id="signalPrevious">—</strong></div>
+              <div class="signal-meta"><span>Next forecast window</span><strong id="forecastSessions">— visits</strong></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="funnel" class="section-anchor section-block">
+          <div class="section-title-row">
+            <div><div class="eyebrow">JOURNEY ANALYSIS</div><h2>Traffic funnel</h2><p class="subheading">Where visitors progress — and where they leave.</p></div>
+            <span class="section-note">Actual traffic only · future forecast excluded</span>
+          </div>
+          <article class="panel funnel-panel">
+            <div class="funnel-head"><span>STAGE</span><span>VOLUME</span><span>CONVERSION</span><span>DROP-OFF</span></div>
+            <div id="funnelRows" class="funnel-rows"><div class="loading-line">Loading funnel…</div></div>
+            <div class="funnel-foot"><span>Visit to order conversion</span><strong id="funnelOverall">—</strong></div>
+          </article>
+        </section>
+
+        <section id="diagnostics" class="section-anchor section-block">
+          <div class="section-title-row">
+            <div><div class="eyebrow">EVIDENCE-LED DIAGNOSIS</div><h2>Top hypotheses</h2><p class="subheading">Ranked signals from the current window, with evidence to validate each one.</p></div>
+            <span id="diagnosisStatus" class="run-status"><i></i> Awaiting first run</span>
+          </div>
+          <div id="hypothesisList" class="hypothesis-grid">
+            <article class="panel hypothesis-card skeleton"><div class="loading-line">Waiting for diagnostic agent…</div></article>
+          </div>
+        </section>
+
+        <section id="agent" class="section-anchor section-block">
+          <div class="section-title-row">
+            <div><div class="eyebrow">AUTONOMOUS MONITORING</div><h2>Agent activity</h2><p class="subheading">Scheduled diagnostics run independently of dashboard clicks.</p></div>
+            <div class="agent-running"><span class="status-pulse"></span> WORKER ACTIVE</div>
+          </div>
+          <div class="agent-grid">
+            <article class="panel agent-summary">
+              <div class="agent-summary-top"><div class="agent-icon">✳</div><span class="run-status"><i></i> Running locally</span></div>
+              <h3>Funnel diagnostic agent</h3>
+              <p>Evaluates conversion, payment success, app performance and channel mix against the trailing baseline.</p>
+              <div class="agent-rule"><span>Trigger</span><strong>Automatic · every 90 sec</strong></div>
+              <div class="agent-rule"><span>Live stream</span><strong>Every 8 sec</strong></div>
+              <div class="agent-rule"><span>Storage</span><strong>SQLite · local database</strong></div>
+              <button class="button button-outline full-width" id="runButtonSecondary">Run a diagnostic now <span>→</span></button>
+            </article>
+            <article class="panel run-history">
+              <div class="panel-heading"><div><h2>Recent executions</h2><p>Persisted agent run history</p></div><span class="history-count" id="runCount">0 runs</span></div>
+              <div id="runList" class="run-list"><div class="loading-line">Waiting for the first scheduled run…</div></div>
+            </article>
+          </div>
+          <div class="data-footnote"><span class="footnote-icon">i</span><span>All records are synthetic. Diagnostic results are hypotheses, not confirmed root causes. Validate against production gateway responses, app versions and campaign data.</span></div>
+        </section>
+
+        <footer class="footer"><span>LENSKART GROWTH INTELLIGENCE</span><span>LOCAL DEMO <i></i> SQLite connected</span></footer>
+      </div>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
