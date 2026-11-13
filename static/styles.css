@@ -189,7 +189,7 @@ h1 { font-size: 25px; letter-spacing: -.8px; margin: 7px 0 5px; font-weight: 760
 @media (max-width: 940px) {
   .sidebar { width: 65px; padding: 18px 8px; align-items: center; }
   .brand { padding: 0 0 30px; }
-  .brand > div:last-child, .workspace-label, .nav-item:not(.active) { display: none; }
+  .brand > div:last-child, .workspace-label { display: none; }
   .nav-item { width: 46px; padding: 0; justify-content: center; font-size: 0; }
   .nav-item.active { display: flex; }
   .nav-icon { font-size: 18px; }
