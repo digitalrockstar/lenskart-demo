@@ -124,7 +124,7 @@ function renderHypotheses(hypotheses, run) {
   $("diagnosisStatus").innerHTML = '<i></i> Last run ' + dateTimeLabel(run?.completed_at);
   $("hypothesisList").innerHTML = hypotheses.map(h => `
     <article class="panel hypothesis-card">
-      <div class="hypothesis-top"><span class="rank-tag">#${h.rank} PRIORITY</span><span class="confidence ${h.confidence.toLowerCase()}">${h.confidence} confidence</span></div>
+      <div class="hypothesis-top"><span class="rank-tag">#${h.rank} PRIORITY · ${h.signal_label.toUpperCase()}</span><span class="confidence ${h.confidence.toLowerCase()}">${h.confidence} confidence</span></div>
       <div class="hypothesis-category">${h.category}</div>
       <h3>${h.title}</h3>
       <p class="hypothesis-evidence">${h.evidence}</p>
