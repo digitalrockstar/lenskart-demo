@@ -33,9 +33,8 @@ def mocked_aggregate(scenario="neutral", low_sample=False):
         if filters.get("device") == "Android App" and "payment_method" in filters:
             attempts = 100 if low_sample else 12_000
             previous_orders = round(attempts * 0.85)
-            current_orders = round(attempts * (0.45 if scenario == "anomaly" else 0.77))
-            if scenario == "threshold":
-                current_orders = round(attempts * 0.77)
+            current_rate = 0.45 if scenario == "anomaly" else 0.77 if scenario == "threshold" else 0.85
+            current_orders = round(attempts * current_rate)
             if not current:
                 return metric_row(sessions=20_000, payment_attempts=attempts, orders=previous_orders)
             return metric_row(sessions=20_000, payment_attempts=attempts, orders=current_orders)
