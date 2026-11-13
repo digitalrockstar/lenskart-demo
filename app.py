@@ -290,10 +290,15 @@ def make_hypotheses(now: datetime | None = None) -> list[dict[str, Any]]:
 
     social_now = aggregate(current_start, now, {"channel": "Paid Social"})
     social_prev = aggregate(previous_start, current_start, {"channel": "Paid Social"})
+    organic_now = aggregate(current_start, now, {"channel": "Organic Search"})
+    search_now = aggregate(current_start, now, {"channel": "Paid Search"})
     social_share_now = pct(social_now["sessions"], current["sessions"])
     social_share_prev = pct(social_prev["sessions"], previous["sessions"])
     social_view_now = pct(social_now["product_views"], social_now["sessions"])
-    social_view_prev = pct(social_prev["product_views"], social_prev["sessions"])
+    non_social_view_now = pct(
+        organic_now["product_views"] + search_now["product_views"],
+        organic_now["sessions"] + search_now["sessions"],
+    )
 
     items = [
         {
@@ -340,8 +345,9 @@ def make_hypotheses(now: datetime | None = None) -> list[dict[str, Any]]:
                                   + max(0, social_view_prev - social_view_now) * 0.25)),
             "evidence": (
                 f"Paid Social share moved from {social_share_prev:.1f}% to "
-                f"{social_share_now:.1f}% of sessions. Its product-view rate is "
-                f"{social_view_now:.1f}% vs {social_view_prev:.1f}% previously."
+                f"{social_share_now:.1f}% of sessions (up from {social_share_prev:.1f}%). "
+                f"Its product-view rate is {social_view_now:.1f}% vs "
+                f"{non_social_view_now:.1f}% for non-social traffic."
             ),
             "confirm_if": (
                 "Campaign/ad-set and landing-page cuts show the incremental paid-social "
